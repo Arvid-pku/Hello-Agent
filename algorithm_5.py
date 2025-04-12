@@ -2,24 +2,26 @@
 # Import necessary libraries
 import numpy as np
 from collections import Counter
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
 
 # Generate or load data
-# For simplicity, we'll create a synthetic dataset
-X = np.random.rand(100, 2)
-y = (X[:, 0] + X[:, 1] > 1).astype(int)
+X, y = make_classification(n_samples=100, n_features=20, n_informative=15, n_redundant=5, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Define the distance metric
 def euclidean_distance(x1, x2):
     return np.sqrt(np.sum((x1 - x2) ** 2))
 
-def knn_predict(X_train, y_train, x_test, k=3):
-    distances = [euclidean_distance(x_test, x) for x in X_train]
-    k_indices = np.argsort(distances)[:k]
-    k_nearest_labels = [y_train[i] for i in k_indices]
-    most_common = Counter(k_nearest_labels).most_common(1)
-    return most_common[0][0]
+def knn_predict(X_train, y_train, X_test, k=3):
+    predictions = []
+    for x in X_test:
+        distances = [euclidean_distance(x, x_train) for x_train in X_train]
+        k_indices = np.argsort(distances)[:k]
+        k_nearest_labels = [y_train[i] for i in k_indices]
+        most_common = Counter(k_nearest_labels).most_common(1)[0][0]
+        predictions.append(most_common)
+    return predictions
 
 # Make predictions on new data
-new_X = np.array([[0.5, 0.5], [1.5, 1.5]])
-predictions = [knn_predict(X, y, x, k=3) for x in new_X]
+predictions = knn_predict(X_train, y_train, X_test, k=3)
 print('Predictions:', predictions)
